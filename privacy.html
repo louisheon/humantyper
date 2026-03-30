@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — HumanTyper</title>
+  <meta name="description" content="HumanTyper privacy policy — what data we collect, how we use it, and your rights.">
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="ht-page">
+  <span class="ht-label">Legal</span>
+  <h1 class="ht-h1" style="font-size:clamp(36px,5vw,56px);">Privacy Policy</h1>
+  <p style="font-family:'Instrument Mono',monospace;font-size:12px;color:#3a3a3a;margin-bottom:48px;">Last updated: January 2025</p>
+
+  <div class="ht-body">
+
+    <p>HumanTyper ("we", "us", "our") is a Chrome browser extension. This policy explains what information is collected when you use HumanTyper and how it is used.</p>
+    <p>The short version: <strong>we collect almost nothing.</strong> HumanTyper works locally in your browser and does not send your text to any server.</p>
+
+    <div class="ht-divider"></div>
+
+    <h3>1. Information We Do Not Collect</h3>
+    <p>HumanTyper does <strong>not</strong> collect, store, or transmit:</p>
+    <ul>
+      <li>The text you type or paste into the extension</li>
+      <li>The contents of documents you type into</li>
+      <li>Your browsing history or page content</li>
+      <li>Keystrokes or clipboard contents beyond what you explicitly paste into the HumanTyper text box</li>
+      <li>Personal identifying information such as your name, email address, or IP address</li>
+    </ul>
+
+    <h3>2. Information Stored Locally (On Your Device)</h3>
+    <p>HumanTyper stores the following in your browser's local storage (<code>chrome.storage.local</code>). This data never leaves your device:</p>
+    <ul>
+      <li><strong>Settings</strong> — your preferred WPM speed, variance level, and typo rate</li>
+      <li><strong>Last text</strong> — the most recently pasted text, so you don't have to re-paste after reopening the extension</li>
+      <li><strong>Daily usage counter</strong> — a count of characters typed today (for free-tier users), keyed to the current date. Resets automatically at midnight. No usage data is sent to us.</li>
+      <li><strong>License key</strong> — if you are a Pro user, your license key is stored locally so you don't need to re-enter it</li>
+    </ul>
+
+    <h3>3. License Key Validation</h3>
+    <p>When you activate a Pro license, the extension sends your license key to <a href="https://www.lemonsqueezy.com" target="_blank">Lemon Squeezy's</a> validation API to confirm it is valid and active. This is the only outbound network request HumanTyper makes. Lemon Squeezy may log this request per their own privacy policy.</p>
+    <p>We do not receive or store your license key on any server we control. It lives only on your device.</p>
+
+    <h3>4. Purchase Data</h3>
+    <p>Purchases are handled entirely by <a href="https://www.lemonsqueezy.com" target="_blank">Lemon Squeezy</a>. We receive your email address from Lemon Squeezy to provide support. We do not receive your payment card information. Lemon Squeezy's privacy policy governs your purchase data.</p>
+
+    <h3>5. Contact Form</h3>
+    <p>If you use our contact form, your name, email, and message are submitted to <a href="https://formspree.io" target="_blank">Formspree</a> and forwarded to our support email. We use this information only to respond to your inquiry. Formspree's privacy policy applies to form submissions.</p>
+
+    <h3>6. Permissions Explained</h3>
+    <p>HumanTyper requests the following Chrome permissions:</p>
+    <ul>
+      <li><strong>activeTab / scripting</strong> — to inject the floating button UI into Google Docs and to interact with the active tab for typing</li>
+      <li><strong>debugger</strong> — to send real keyboard input events via Chrome's debugger protocol. This is required because Google Docs does not respond to standard JavaScript keyboard events. The debugger is attached only during active typing and detached immediately when typing ends or is stopped.</li>
+      <li><strong>storage</strong> — to save your settings and usage data locally on your device</li>
+    </ul>
+
+    <h3>7. Chrome Debugger Notice</h3>
+    <p>Because HumanTyper uses the Chrome Debugger API, Chrome will display a "DevTools is debugging this tab" banner during active typing sessions. This is a standard Chrome safety notice and does not mean anyone is monitoring your browser. HumanTyper only uses the debugger to dispatch keyboard events — it does not read page content, intercept network requests, or access any data from the page.</p>
+
+    <h3>8. Children's Privacy</h3>
+    <p>HumanTyper is not directed at children under 13. We do not knowingly collect any information from children.</p>
+
+    <h3>9. Changes to This Policy</h3>
+    <p>We may update this policy occasionally. When we do, we will update the date at the top of this page. Continued use of HumanTyper after changes constitutes acceptance of the updated policy.</p>
+
+    <h3>10. Contact</h3>
+    <p>Questions about this policy? Email us at <a href="mailto:support@humantyper.com">support@humantyper.com</a> or use the <a href="contact.html">contact page</a>.</p>
+
+  </div>
+</div>
+
+<script src="shared.js"></script>
+</body>
+</html>

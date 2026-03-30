@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HumanTyper — Make AI Writing Look Hand-Typed in Google Docs</title>
+  <meta name="description" content="HumanTyper types your text letter by letter in Google Docs — so edit history looks natural, not pasted. Used by students, writers, and professionals.">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 130px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 65% 45% at 50% 60%, rgba(200,245,58,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 80% 50% at 15% 10%, rgba(200,245,58,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200,245,58,0.08);
+      border: 1px solid rgba(200,245,58,0.22);
+      color: var(--lime);
+      font-family: 'Instrument Mono', monospace;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--lime);
+      animation: badgePulse 2s ease infinite;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(50px, 8vw, 94px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 24px;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    .hero h1 em { font-style: normal; color: var(--lime); }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      color: var(--muted);
+      max-width: 540px;
+      margin: 0 auto 16px;
+      line-height: 1.65;
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    .hero-proof {
+      font-size: 13px;
+      color: #3a3a3a;
+      font-family: 'Instrument Mono', monospace;
+      margin-bottom: 44px;
+      animation: fadeUp 0.5s 0.25s ease both;
+    }
+
+    .hero-proof span { color: #555; }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 72px;
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+
+    /* ── Browser mockup ── */
+    .browser-wrap {
+      width: 100%;
+      max-width: 720px;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+
+    .browser-frame {
+      background: #181818;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .browser-bar {
+      background: #222;
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .browser-dots { display: flex; gap: 6px; }
+    .bd { width: 10px; height: 10px; border-radius: 50%; }
+    .bd:nth-child(1) { background: #ff5f57; }
+    .bd:nth-child(2) { background: #febc2e; }
+    .bd:nth-child(3) { background: #28c840; }
+
+    .browser-url {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+      padding: 4px 11px;
+      font-family: 'Instrument Mono', monospace;
+      font-size: 11px;
+      color: #555;
+    }
+
+    .browser-content {
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* floating pill inside mockup */
+    .mock-pill {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #0f0f0f;
+      border: 1px solid rgba(200,245,58,0.35);
+      border-radius: 100px;
+      padding: 6px 14px 6px 9px;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      z-index: 2;
+    }
+
+    .mock-pill-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 8px rgba(200,245,58,0.6);
+      animation: badgePulse 1.5s ease infinite;
+    }
+
+    .mock-pill-label {
+      font-family: 'Instrument Mono', monospace;
+      font-size: 11px;
+      color: var(--lime);
+      font-weight: 600;
+    }
+
+    /* fake google doc */
+    .fake-doc {
+      flex: 1;
+      background: #fff;
+      border-radius: 6px;
+      padding: 22px 24px;
+      min-height: 140px;
+    }
+
+    .fake-doc-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 12px;
+    }
+
+    .typing-line {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.7;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 2px solid #1a73e8;
+      animation: typeAnim 6s steps(65) infinite, blinkCaret 0.75s step-end infinite;
+      max-width: 100%;
+    }
+
+    .fake-doc-sub {
+      font-size: 12px;
+      color: #999;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+
+    /* ── Problem section ── */
+    .problem-section {
+      padding: 100px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .problem-visual {
+      background: var(--grey);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .problem-visual-header {
+      background: #222;
+      padding: 12px 16px;
+      font-family: 'Instrument Mono', monospace;
+      font-size: 11px;
+      color: #555;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    .version-list { padding: 16px; }
+
+    .version-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .version-item:last-child { border-bottom: none; }
+
+    .version-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      flex-shrink: 0;
+    }
+
+    .version-text { flex: 1; }
+    .version-action { font-size: 12px; color: #e8e5de; margin-bottom: 2px; }
+    .version-time { font-family: 'Instrument Mono', monospace; font-size: 10px; color: #555; }
+
+    .version-bad .version-action { color: #ff6b6b; }
+    .version-bad .version-avatar { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+    .version-good .version-action { color: var(--lime); }
+    .version-good .version-avatar { background: rgba(200,245,58,0.1); color: var(--lime); }
+    .version-neutral .version-avatar { background: var(--grey2); color: #888; }
+
+    .version-tag {
+      font-family: 'Instrument Mono', monospace;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .tag-bad { background: rgba(255,107,107,0.1); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.2); }
+    .tag-good { background: rgba(200,245,58,0.08); color: var(--lime); border: 1px solid rgba(200,245,58,0.2); }
+
+    /* ── Video section ── */
+    .video-section {
+      padding: 100px 48px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .video-container {
+      margin-top: 48px;
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: var(--grey);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+    }
+
+    /* Remove this placeholder content once you embed the video */
+    .video-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      color: #3a3a3a;
+    }
+
+    .video-play-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(200,245,58,0.08);
+      border: 2px solid rgba(200,245,58,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .video-placeholder-text {
+      font-family: 'Instrument Mono', monospace;
+      font-size: 12px;
+      color: #3a3a3a;
+      letter-spacing: 0.06em;
+    }
+
+    /* To embed YouTube later, replace .video-container contents with:
+       <iframe width="100%" height="100%" src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+         frameborder="0" allowfullscreen style="position:absolute;inset:0;"></iframe>
+       and remove the .video-placeholder div */
+
+    /* ── Features ── */
+    .features-section {
+      padding: 100px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .feature-card {
+      background: var(--grey);
+      padding: 32px;
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--lime);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .feature-card:hover::before { transform: scaleX(1); }
+    .feature-card:hover { background: #212121; }
+
+    .fi { width: 38px; height: 38px; background: rgba(200,245,58,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; margin-bottom: 16px; }
+    .ft { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 7px; }
+    .fd { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── How it works ── */
+    .how-section {
+      padding: 80px 48px 100px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+      margin-top: 56px;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 27px;
+      left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--grey2) 20%, var(--grey2) 80%, transparent);
+    }
+
+    .step { padding: 0 20px; text-align: center; }
+
+    .step-num {
+      width: 54px; height: 54px;
+      background: var(--grey);
+      border: 2px solid var(--grey2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      color: var(--lime);
+      margin: 0 auto 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; color: var(--white); margin-bottom: 7px; }
+    .step-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Reviews ── */
+    .reviews-section {
+      padding: 80px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 44px;
+    }
+
+    .rv { background: var(--grey); padding: 26px; border: 1px solid rgba(255,255,255,0.04); }
+    .rv-stars { color: var(--lime); font-size: 12px; margin-bottom: 12px; letter-spacing: 2px; }
+    .rv-text { font-size: 13px; color: var(--text); line-height: 1.7; margin-bottom: 18px; }
+    .rv-author { display: flex; align-items: center; gap: 9px; }
+    .rv-av { width: 30px; height: 30px; border-radius: 50%; background: var(--grey2); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--lime); }
+    .rv-name { font-size: 12px; font-weight: 500; color: var(--white); }
+    .rv-role { font-size: 11px; color: var(--muted); }
+
+    /* ── Pricing ── */
+    .pricing-section {
+      padding: 80px 48px 100px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 680px;
+      margin: 56px auto 0;
+      text-align: left;
+    }
+
+    .pc { background: var(--grey); padding: 36px; border: 1px solid rgba(255,255,255,0.04); position: relative; }
+    .pc.featured { background: #171717; border: 1px solid rgba(200,245,58,0.28); box-shadow: 0 0 40px rgba(200,245,58,0.05); }
+    .pc-badge { position: absolute; top: -1px; right: 22px; background: var(--lime); color: var(--black); font-family: 'Instrument Mono', monospace; font-size: 9px; font-weight: 600; padding: 3px 9px; letter-spacing: 0.05em; }
+    .pc-tier { font-family: 'Instrument Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 18px; }
+    .pc-price { font-family: 'Syne', sans-serif; font-size: 44px; font-weight: 800; color: var(--white); line-height: 1; margin-bottom: 4px; }
+    .pc-price sup { font-size: 20px; vertical-align: super; font-weight: 600; }
+    .pc-period { font-size: 12px; color: var(--muted); margin-bottom: 28px; }
+    .pc-features { list-style: none; margin-bottom: 28px; }
+    .pc-features li { font-size: 13px; color: var(--text); padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; gap: 9px; }
+    .pc-features li:last-child { border-bottom: none; }
+    .pc-features li.dim { color: var(--muted); }
+    .ck { color: var(--lime); font-size: 12px; flex-shrink: 0; }
+    .cx { color: #3a3a3a; font-size: 12px; flex-shrink: 0; }
+
+    .btn-pp { display: block; width: 100%; background: var(--lime); color: var(--black); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; padding: 13px; border-radius: 4px; text-align: center; text-decoration: none; transition: background 0.2s, transform 0.15s; }
+    .btn-pp:hover { background: #d8ff4a; transform: translateY(-1px); }
+    .btn-ps { display: block; width: 100%; background: transparent; color: var(--muted); font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px; padding: 13px; border: 1px solid var(--grey2); border-radius: 4px; text-align: center; text-decoration: none; transition: border-color 0.2s, color 0.2s; }
+    .btn-ps:hover { border-color: var(--muted); color: var(--text); }
+
+    /* ── FAQ ── */
+    .faq-section {
+      padding: 80px 48px 100px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .faq-item { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 22px 0; }
+    .faq-q { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 9px; }
+    .faq-a { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .faq-a a { color: var(--lime); text-decoration: none; }
+    .faq-a a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .problem-section { grid-template-columns: 1fr; gap: 40px; padding: 70px 20px; }
+      .features-section, .how-section, .reviews-section, .pricing-section, .faq-section, .video-section { padding-left: 20px; padding-right: 20px; }
+      .features-grid, .reviews-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .steps::before { display: none; }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+
+  <div class="hero-badge">Chrome Extension · Works in Google Docs</div>
+
+  <h1>Your essay.<br><em>Looks typed.</em></h1>
+
+  <p class="hero-sub">
+    Teachers can see Google Docs edit history — a pasted wall of text is an instant red flag. HumanTyper types your text letter by letter so the history looks completely natural.
+  </p>
+
+  <p class="hero-proof">
+    <span>✓ No suspicious paste events &nbsp;·&nbsp; ✓ Natural keystroke history &nbsp;·&nbsp; ✓ Undetectable</span>
+  </p>
+
+  <div class="hero-actions">
+    <a href="https://chromewebstore.google.com" class="ht-btn">Add to Chrome — Free</a>
+    <a href="#how" class="ht-btn-ghost">See how it works →</a>
+  </div>
+
+  <div class="browser-wrap">
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dots">
+          <div class="bd"></div><div class="bd"></div><div class="bd"></div>
+        </div>
+        <div class="browser-url">docs.google.com/document/d/1xyz…</div>
+      </div>
+      <div class="browser-content">
+        <div class="mock-pill">
+          <div class="mock-pill-dot"></div>
+          <span class="mock-pill-label">HumanTyper</span>
+        </div>
+        <div class="fake-doc">
+          <div class="fake-doc-title">The Impact of Industrialization on Society</div>
+          <div class="typing-line">The rapid growth of industrial production fundamentally transformed how people lived and worked…</div>
+          <div class="fake-doc-sub" style="color:#bbb;font-size:11px;margin-top:8px;">✓ Edit history shows character-by-character typing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROBLEM / SOLUTION ═══ -->
+<section class="problem-section" id="features">
+  <div>
+    <span class="section-label">The Problem</span>
+    <h2 class="section-title">Google Docs<br>remembers everything.</h2>
+    <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
+      Every time you paste text into Google Docs, it logs a single edit event — the entire block appears instantly. Teachers who check version history can see exactly what happened and when.
+    </p>
+    <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:32px;">
+      HumanTyper types your text one character at a time using Chrome's actual keyboard input system — the same signals as a real person typing. The edit history is completely indistinguishable from genuine typing.
+    </p>
+    <a href="#pricing" class="ht-btn">Get started free →</a>
+  </div>
+
+  <div class="problem-visual">
+    <div class="problem-visual-header">
+      <div class="version-dot" style="background:#ff5f57"></div>
+      <div class="version-dot" style="background:#febc2e"></div>
+      <div class="version-dot" style="background:#28c840"></div>
+      &nbsp; Version history
+    </div>
+    <div class="version-list">
+      <div style="font-family:'Instrument Mono',monospace;font-size:9px;color:#3a3a3a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Without HumanTyper</div>
+      <div class="version-item version-bad">
+        <div class="version-avatar">JS</div>
+        <div class="version-text">
+          <div class="version-action">Added 1,240 characters at once</div>
+          <div class="version-time">3:14 PM · 1 edit</div>
+        </div>
+        <div class="version-tag tag-bad">SUSPICIOUS</div>
+      </div>
+
+      <div style="font-family:'Instrument Mono',monospace;font-size:9px;color:#3a3a3a;letter-spacing:.08em;text-transform:uppercase;margin:16px 0 8px;">With HumanTyper</div>
+      <div class="version-item version-good">
+        <div class="version-avatar">JS</div>
+        <div class="version-text">
+          <div class="version-action">Typed naturally over 8 minutes</div>
+          <div class="version-time">3:06 PM → 3:14 PM · 1,240 edits</div>
+        </div>
+        <div class="version-tag tag-good">NATURAL</div>
+      </div>
+      <div class="version-item version-neutral">
+        <div class="version-avatar" style="background:var(--grey2);color:#888">JS</div>
+        <div class="version-text">
+          <div class="version-action" style="color:#888">Minor corrections, punctuation</div>
+          <div class="version-time">3:09 PM · 4 edits</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ VIDEO ═══ -->
+<section class="video-section" id="demo">
+  <span class="section-label">See it in action</span>
+  <h2 class="section-title">Watch how it works.</h2>
+  <p class="section-sub" style="margin:0 auto 0;max-width:460px;">A 90-second demo showing HumanTyper typing an essay into Google Docs — and what the edit history looks like after.</p>
+
+  <div class="video-container">
+    <!-- ══ PASTE YOUR YOUTUBE EMBED HERE ══
+         Replace everything inside .video-container with:
+         <iframe
+           width="100%" height="100%"
+           src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0"
+           title="HumanTyper demo"
+           frameborder="0"
+           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+           allowfullscreen
+           style="position:absolute;inset:0;width:100%;height:100%;">
+         </iframe>
+         Then delete the .video-placeholder div below.
+    ═══════════════════════════════════════ -->
+    <div class="video-placeholder">
+      <div class="video-play-icon">▶</div>
+      <div class="video-placeholder-text">// VIDEO COMING SOON</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features-section">
+  <span class="section-label">Features</span>
+  <h2 class="section-title">Built to be<br>undetectable.</h2>
+  <p class="section-sub">Every detail designed to produce a history that looks exactly like real human typing.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="fi">⌨</div>
+      <div class="ft">Real Keystroke Engine</div>
+      <div class="fd">Uses Chrome's low-level debugger protocol — not DOM hacks. Google Docs edit history records genuine keyboard events.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi">🎲</div>
+      <div class="ft">Human Rhythm</div>
+      <div class="fd">Randomized delays, occasional thinking pauses, natural speed variation. No robotic uniform timing.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi">✏️</div>
+      <div class="ft">Typo Simulation</div>
+      <div class="fd">Optionally makes typos mid-word and corrects them — exactly like a real person typing. The most convincing touch. Pro feature.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi">🪟</div>
+      <div class="ft">Floating In-Doc Button</div>
+      <div class="fd">A button appears directly inside Google Docs. Click, paste, start. No tab switching, no popup fumbling.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi">⚡</div>
+      <div class="ft">Speed Control</div>
+      <div class="fd">Set your WPM. Slow for a convincing long session, fast when you're short on time. 20–200 WPM range.</div>
+    </div>
+    <div class="feature-card">
+      <div class="fi">🌐</div>
+      <div class="ft">Works Everywhere</div>
+      <div class="fd">Optimized for Google Docs but works in any browser text field — Gmail, forms, web editors, anywhere.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section" id="how">
+  <span class="section-label">How it works</span>
+  <h2 class="section-title">Ready in 60 seconds.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Install</div>
+      <div class="step-desc">Add HumanTyper from the Chrome Web Store. Free, one click.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Open your Doc</div>
+      <div class="step-desc">Open Google Docs. A HumanTyper button appears at the top of the page automatically.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Paste your text</div>
+      <div class="step-desc">Click the button, paste whatever text you want typed, set your speed and style.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-title">Walk away</div>
+      <div class="step-desc">Hit Start. The button becomes a progress bar. Come back to perfectly typed text.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REVIEWS ═══ -->
+<section class="reviews-section">
+  <span class="section-label">Reviews</span>
+  <h2 class="section-title">Students love it.</h2>
+  <div class="reviews-grid">
+    <div class="rv">
+      <div class="rv-stars">★★★★★</div>
+      <div class="rv-text">"My professor checks version history on every assignment. This is the only thing that actually made my history look clean."</div>
+      <div class="rv-author"><div class="rv-av">AK</div><div><div class="rv-name">Alex K.</div><div class="rv-role">University student</div></div></div>
+    </div>
+    <div class="rv">
+      <div class="rv-stars">★★★★★</div>
+      <div class="rv-text">"The typo feature is what sold me. It corrects them mid-word just like I actually type. Looks completely real."</div>
+      <div class="rv-author"><div class="rv-av">MR</div><div><div class="rv-name">Maria R.</div><div class="rv-role">College sophomore</div></div></div>
+    </div>
+    <div class="rv">
+      <div class="rv-stars">★★★★★</div>
+      <div class="rv-text">"I use it for client docs at work too. The floating button in Google Docs is such a clean touch. Set it and forget it."</div>
+      <div class="rv-author"><div class="rv-av">JT</div><div><div class="rv-name">James T.</div><div class="rv-role">Freelance writer</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="pricing-section" id="pricing">
+  <span class="section-label">Pricing</span>
+  <h2 class="section-title">Simple. No subscriptions.</h2>
+  <p style="font-size:16px;color:var(--muted);max-width:400px;margin:0 auto;">Try free. Pay once for Pro. No monthly fees, ever.</p>
+
+  <div class="pricing-grid">
+    <div class="pc">
+      <div class="pc-tier">Free</div>
+      <div class="pc-price">$0</div>
+      <div class="pc-period">forever</div>
+      <ul class="pc-features">
+        <li><span class="ck">✓</span> 250 characters / day</li>
+        <li><span class="ck">✓</span> Floating button in Google Docs</li>
+        <li><span class="ck">✓</span> Speed control (WPM)</li>
+        <li><span class="ck">✓</span> Natural rhythm variation</li>
+        <li class="dim"><span class="cx">✗</span> Unlimited characters</li>
+        <li class="dim"><span class="cx">✗</span> Variance control</li>
+        <li class="dim"><span class="cx">✗</span> Typo simulation</li>
+        <li class="dim"><span class="cx">✗</span> Priority support</li>
+      </ul>
+      <a href="https://chromewebstore.google.com" class="btn-ps">Add to Chrome</a>
+    </div>
+    <div class="pc featured">
+      <div class="pc-badge">MOST POPULAR</div>
+      <div class="pc-tier">Pro</div>
+      <div class="pc-price"><sup>$</sup>9</div>
+      <div class="pc-period">one-time · lifetime license · 2 devices</div>
+      <ul class="pc-features">
+        <li><span class="ck">✓</span> <strong>Unlimited</strong> characters</li>
+        <li><span class="ck">✓</span> Floating button in Google Docs</li>
+        <li><span class="ck">✓</span> Speed control (WPM)</li>
+        <li><span class="ck">✓</span> Natural rhythm variation</li>
+        <li><span class="ck">✓</span> Variance control</li>
+        <li><span class="ck">✓</span> Typo simulation</li>
+        <li><span class="ck">✓</span> Priority support</li>
+      </ul>
+      <a href="#" data-checkout class="btn-pp">Get Pro — $9</a>
+    </div>
+  </div>
+  <p style="margin-top:22px;font-size:13px;color:var(--muted);">
+    Already have a license? Open HumanTyper in Chrome and click <strong style="color:var(--text)">FREE — Upgrade</strong> to activate it.
+  </p>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq-section" id="faq">
+  <span class="section-label">FAQ</span>
+  <h2 class="section-title" style="margin-bottom:44px">Questions.</h2>
+
+  <div class="faq-item">
+    <div class="faq-q">Does this actually fool Google Docs version history?</div>
+    <div class="faq-a">Yes. HumanTyper uses Chrome's debugger protocol to send real, low-level keyboard input events — the exact same signals as a real person typing. Google Docs records each character as a separate edit, spread over real time. The resulting version history is completely indistinguishable from genuine typing.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What's the 250 character free limit?</div>
+    <div class="faq-a">The free tier lets you type 250 characters per day — about 2–3 sentences, enough to try it out. The limit resets at midnight. Pro removes it entirely with no daily cap.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Is it a subscription?</div>
+    <div class="faq-a">No. Pro is a one-time $9 payment. You get a lifetime license key that works on up to 2 devices. No monthly charges, ever.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Why does Chrome show a "DevTools is debugging" banner?</div>
+    <div class="faq-a">The Chrome Debugger API — which is what makes real keystroke history possible — shows this as a browser safety notice. It disappears the moment typing finishes. It's only visible to you, not in the document or its history.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Does it work on sites other than Google Docs?</div>
+    <div class="faq-a">Yes. The floating button is Google Docs–only, but the extension toolbar icon works on any website — text inputs, forms, Gmail, Notion, and more.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What's the refund policy?</div>
+    <div class="faq-a">We offer a full refund within 24 hours of purchase, no questions asked. Email <a href="mailto:support@humantyper.com">support@humantyper.com</a>.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Something's not working. Help?</div>
+    <div class="faq-a">Email <a href="mailto:support@humantyper.com">support@humantyper.com</a> or use the <a href="contact.html">contact page</a>. Pro users get priority responses within a few hours.</div>
+  </div>
+</section>
+
+<script src="shared.js"></script>
+</body>
+</html>

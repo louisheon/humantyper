@@ -1,0 +1,333 @@
+/* HumanTyper — shared.css */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@400;500&family=Instrument+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0a0a0a;
+  --white: #f2f0eb;
+  --lime: #c8f53a;
+  --lime-dark: #9dbe2a;
+  --grey: #1c1c1c;
+  --grey2: #2a2a2a;
+  --muted: #555;
+  --text: #e8e5de;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 998;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* ── Navigation ── */
+.ht-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(10,10,10,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.ht-nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--white);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ht-nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 10px rgba(200,245,58,0.7);
+  flex-shrink: 0;
+}
+
+.ht-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+
+.ht-nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.ht-nav-links a:hover { color: var(--text); }
+
+.ht-nav-cta {
+  background: var(--lime) !important;
+  color: var(--black) !important;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: 600 !important;
+  transition: background 0.2s, transform 0.15s !important;
+}
+.ht-nav-cta:hover {
+  background: #d8ff4a !important;
+  transform: translateY(-1px);
+  color: var(--black) !important;
+}
+
+/* ── Footer ── */
+.ht-footer {
+  padding: 48px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.ht-footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ht-footer-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.ht-footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.ht-footer-links a:hover { color: var(--text); }
+
+.ht-footer-copy {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'Instrument Mono', monospace;
+}
+
+/* ── Page containers ── */
+.ht-page {
+  padding-top: 110px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 100px;
+}
+
+.ht-page-wide {
+  padding-top: 110px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-left: 48px;
+  padding-right: 48px;
+  padding-bottom: 100px;
+}
+
+/* ── Typography ── */
+.ht-label {
+  font-family: 'Instrument Mono', monospace;
+  font-size: 11px;
+  color: var(--lime);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.ht-h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.ht-h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+
+.ht-h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.ht-lead {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+/* ── Body text for legal/content pages ── */
+.ht-body { font-size: 15px; color: var(--muted); line-height: 1.8; }
+.ht-body p { margin-bottom: 18px; }
+.ht-body h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--white);
+  margin: 36px 0 10px;
+}
+.ht-body ul { padding-left: 20px; margin-bottom: 18px; }
+.ht-body ul li { margin-bottom: 7px; }
+.ht-body a { color: var(--lime); text-decoration: none; }
+.ht-body a:hover { text-decoration: underline; }
+.ht-body strong { color: var(--white); }
+.ht-body code {
+  font-family: 'Instrument Mono', monospace;
+  font-size: 13px;
+  background: var(--grey);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--lime);
+}
+
+.ht-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 40px 0; }
+
+/* ── Buttons ── */
+.ht-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--lime);
+  color: var(--black);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 26px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.ht-btn:hover {
+  background: #d8ff4a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(200,245,58,0.22);
+  color: var(--black);
+}
+
+.ht-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 13px 4px;
+  transition: color 0.2s;
+}
+.ht-btn-ghost:hover { color: var(--text); }
+
+/* ── Section label + title pattern ── */
+.section-label {
+  font-family: 'Instrument Mono', monospace;
+  font-size: 11px;
+  color: var(--lime);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.section-sub {
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 480px;
+  margin-bottom: 56px;
+  line-height: 1.65;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(200,245,58,0.4); }
+  50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(200,245,58,0); }
+}
+
+@keyframes blinkCaret {
+  from, to { border-color: transparent; }
+  50% { border-color: #1a73e8; }
+}
+
+@keyframes typeAnim {
+  0%   { width: 0; }
+  60%  { width: 100%; }
+  85%  { width: 100%; }
+  98%  { width: 0; }
+  100% { width: 0; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .ht-nav { padding: 16px 20px; }
+  .ht-nav-links { display: none; }
+  .ht-page { padding-left: 20px; padding-right: 20px; }
+  .ht-page-wide { padding-left: 20px; padding-right: 20px; }
+  .ht-footer { padding: 32px 20px; flex-direction: column; align-items: flex-start; }
+}
